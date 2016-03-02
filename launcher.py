@@ -119,6 +119,7 @@ while not wiimote:
 
     except WiimoteException:
         print("Wiimote error")
+        wiimote = None
         # logging.error("Could not connect to wiimote. please try again")
 
 try:
