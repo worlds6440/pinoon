@@ -6,9 +6,21 @@ import RPi.GPIO as GPIO
 import time
 import os
 import sys
+import threading
+from wiimote import Wiimote, WiimoteException
+import drivetrain
+import rc
 
 start_pin = 24
 shutdown_pin = 18
+pwm_address = 0x40
+
+# Thread pointer for RC mode
+rc_class = None
+rc_thread = None
+# class pointers to wiimote and drivetrain
+drive = None
+wiimote = None
 
 # Project installation directory
 project_dir = "/home/pi/Projects/pinoon/"
@@ -26,6 +38,15 @@ GPIO.setup(start_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(shutdown_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 
+def kill_rc_thread():
+    """ Stop any active RC thread """
+    global rc_class
+    global rc_thread
+    rc_class.stop()
+    rc_class = None
+    rc_thread = None
+
+
 def shutdown_callback(channel):
     """ Threaded callback function called
     when user presses the shutdown button """
@@ -36,7 +57,39 @@ def shutdown_callback(channel):
 def start_wiimote_callback(channel):
     """ Threaded callback function called
     when user presses the start button """
-    print("Starting wiimote")
+    global drive
+    global wiimote
+    global rc_class
+    global rc_thread
+    if not rc_class:
+        print("Starting RC Mode")
+        # Create and start a new thread running the remote control script
+        rc_class = rc.rc(drive, wiimote)
+        rc_thread = threading.Thread(target=rc_class.run)
+        rc_thread.start()
+    else:
+        print("Stopping RC Mode")
+        # Kill Thread
+        kill_rc_thread()
+
+
+def set_neutral(drive, wiimote):
+    """Simple method to ensure motors are disabled"""
+    if drive:
+        drive.set_neutral()
+        drive.disable_drive()
+    if wiimote is not None:
+        # turn on leds on wii remote
+        wiimote.led = 2
+
+
+def set_drive(drive, wiimote):
+    """Simple method to highlight that motors are enabled"""
+    if wiimote is not None:
+        # turn on leds on wii remote
+        # turn on led to show connected
+        drive.enable_drive()
+        wiimote.led = 1
 
 
 # Callback function
@@ -52,10 +105,50 @@ GPIO.add_event_detect(
     callback=start_wiimote_callback
 )
 
-while (True):
-    try:
-        time.sleep(1)
 
-    except KeyboardInterrupt:
-        GPIO.cleanup()       # clean up GPIO on CTRL+C exit
-GPIO.cleanup()           # clean up GPIO on normal exit
+# Initiate the drivetrain
+drive = drivetrain.DriveTrain(pwm_i2c=pwm_address)
+# Initiate the wiimote connection
+wiimote = None
+while not wiimote:
+    # Loop for ever waiting for the wiimote to connect.
+    try:
+        print("Waiting for you to press '1+2' on wiimote")
+        wiimote = Wiimote()
+
+    except WiimoteException:
+        print("Wiimote error")
+        # logging.error("Could not connect to wiimote. please try again")
+
+try:
+    # Constantly check wiimote for button presses
+    loop_count = 0
+    while wiimote:
+        buttons_state = wiimote.get_buttons()
+        nunchuk_buttons_state = wiimote.get_nunchuk_buttons()
+        joystick_state = wiimote.get_joystick_state()
+
+        # Test if B button is pressed
+        if (
+            joystick_state is None or
+            (buttons_state & cwiid.BTN_B) or
+            (nunchuk_buttons_state & cwiid.NUNCHUK_BTN_Z)
+        ):
+            # No nunchuk joystick detected or B or Z button
+            # pressed, must go into neutral for safety
+            set_neutral(drive, wiimote)
+        else:
+            # Enable motors
+            set_drive(drive, wiimote)
+
+        # MUST have small sleep here, otherwise PWM
+        # board gets too many events and crashes.
+        time.sleep(0.05)
+
+except (Exception, KeyboardInterrupt) as e:
+    print("Ctrl+C Pressed")
+
+# Finally, always close active threads
+kill_rc_thread()
+# clean up GPIO on normal exit
+GPIO.cleanup()
