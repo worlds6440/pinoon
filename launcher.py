@@ -42,7 +42,8 @@ def kill_rc_thread():
     """ Stop any active RC thread """
     global rc_class
     global rc_thread
-    rc_class.stop()
+    if rc_class is not None:
+        rc_class.stop()
     rc_class = None
     rc_thread = None
 

@@ -17,3 +17,8 @@ You must install bluetooth service and cwiid python module
 
 	sudo apt-get install --no-install-recommends bluetooth  
 	sudo apt-get install python-cwiid  
+
+Installing I2C, first enable it in raspi-config
+
+	sudo apt-get install i2c-tools  
+	sudo apt-get install python-smbus  
