@@ -19,7 +19,7 @@ def shutdown_callback(channel):
 
 # Callback function
 GPIO.add_event_detect(
-    17,
+    18,
     GPIO.FALLING,
     callback=shutdown_callback
 )
