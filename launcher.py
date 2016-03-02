@@ -5,9 +5,20 @@ presses to either start wiimote stuff, or shutdown pi """
 import RPi.GPIO as GPIO
 import time
 import os
+import sys
 
 start_pin = 24
 shutdown_pin = 18
+
+# Project installation directory
+project_dir = "/home/pi/Projects/pinoon/"
+if len(sys.argv) > 1:
+    project_dir = sys.argv[1]
+# Ensure project path ends in trailing '/'
+os.path.join(project_dir, '')
+
+# Change to Doorbell folder
+os.chdir(project_dir)
 
 # Pull up appropriate internal resistors
 GPIO.setmode(GPIO.BCM)
