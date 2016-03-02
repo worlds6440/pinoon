@@ -6,22 +6,39 @@ import RPi.GPIO as GPIO
 import time
 import os
 
+start_pin = 24
+shutdown_pin = 18
+
+# Pull up appropriate internal resistors
 GPIO.setmode(GPIO.BCM)
-GPIO.setup(18, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(start_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+GPIO.setup(shutdown_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 
 
 def shutdown_callback(channel):
     """ Threaded callback function called
-    when user presses a button """
+    when user presses the shutdown button """
     print("Shutting down pi")
     os.system("sudo shutdown -h now")
 
 
+def start_wiimote_callback(channel):
+    """ Threaded callback function called
+    when user presses the start button """
+    print("Starting wiimote")
+
+
 # Callback function
 GPIO.add_event_detect(
-    18,
+    shutdown_pin,
     GPIO.FALLING,
     callback=shutdown_callback
+)
+# Callback function
+GPIO.add_event_detect(
+    start_pin,
+    GPIO.FALLING,
+    callback=start_wiimote_callback
 )
 
 while (True):
