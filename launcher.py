@@ -21,8 +21,7 @@ def shutdown_callback(channel):
 GPIO.add_event_detect(
     17,
     GPIO.FALLING,
-    callback=shutdown_callback,
-    bouncetime=300
+    callback=shutdown_callback
 )
 
 while (True):

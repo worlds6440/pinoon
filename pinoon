@@ -1,6 +1,6 @@
 #! /bin/sh
 ### BEGIN INIT INFO
-# Provides:          doorbell
+# Provides:          pinoon
 # Required-Start:    $all
 # Required-Stop:     $all
 # Default-Start:     2 3 4 5
@@ -20,7 +20,7 @@ DAEMON=$DIR/launcher.py
 DAEMON_NAME=pinoon
 
 # no additional (optional) command line options
-DAEMON_OPTS="$DIR"
+DAEMON_OPTS=""
 
 # This next line determines what user the script runs as.
 # Root generally not recommended but necessary if you are using the Raspberry Pi GPIO from Python.
