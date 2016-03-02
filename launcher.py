@@ -7,6 +7,7 @@ import time
 import os
 import sys
 import threading
+import cwiid
 from wiimote import Wiimote, WiimoteException
 import drivetrain
 import rc
@@ -124,13 +125,12 @@ while not wiimote:
 
 try:
     # Constantly check wiimote for button presses
-    loop_count = 0
     while wiimote:
         buttons_state = wiimote.get_buttons()
         nunchuk_buttons_state = wiimote.get_nunchuk_buttons()
         joystick_state = wiimote.get_joystick_state()
 
-        # Test if B button is pressed
+        # Test if B or Z button is pressed
         if (
             joystick_state is None or
             (buttons_state & cwiid.BTN_B) or
@@ -148,7 +148,7 @@ try:
         time.sleep(0.05)
 
 except (Exception, KeyboardInterrupt) as e:
-    print("Ctrl+C Pressed")
+    print("Exception OR Ctrl+C Pressed")
 
 # Finally, always close active threads
 kill_rc_thread()
