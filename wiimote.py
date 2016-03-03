@@ -17,9 +17,11 @@ class Wiimote():
     def __init__(
         self,
         max_tries=5,
-        joystick_range=None
+        joystick_range=None,
+        acc_range=None
     ):
         self.joystick_range = joystick_range if joystick_range else [50, 200]
+        self.acc_range = acc_range if acc_range else [75, 175]
         self.wm = None
         attempts = 0
 
@@ -53,13 +55,57 @@ class Wiimote():
         Returns: dict"""
         return self.wm.state if self.wm else None
 
-    def get_joystick_state(self):
-        """Returns a dictionary containing the state of the nunchuk joystick in the form:
+    def get_nunchuk_accel_state(self):
+        """ Get the nunchuck accelerometer
+            Returns a dictionary containing the state of
+            the nunchuk joystick in the form:
             {
             "state": {
-                    "raw": tuple of the raw joystick readings from cwiid in the form (x, y),
-                    "clipped": tuple of the raw values, clipped to the min/max range,
-                    "normalised": the 'clipped' tuple, with the values mapped to the range -1 to 1
+                    "raw": tuple of the raw joystick readings
+                           from cwiid in the form (x, y),
+                    "clipped": tuple of the raw values, clipped
+                               to the min/max range,
+                    "normalised": the 'clipped' tuple, with the
+                                values mapped to the range -1 to 1
+                }
+            "range": The min/max range to clip raw values to
+            }
+        """
+        if 'nunchuk' not in self.get_state():
+            logging.debug("state: {0}".format(self.get_state()))
+            return None
+        else:
+            acc_state_raw = self.wm.state['nunchuk']['acc']
+            acc_state_clipped = [
+                clip(channel, *self.acc_range)
+                for channel
+                in acc_state_raw
+            ]
+            acc_state_normalised = [
+                interp(channel, self.acc_range, [-1, 1])
+                for channel
+                in acc_state_raw
+            ]
+            return dict(
+                range=self.acc_range,
+                state=dict(
+                    raw=acc_state_raw,
+                    clipped=acc_state_clipped,
+                    normalised=acc_state_normalised
+                )
+            )
+
+    def get_joystick_state(self):
+        """Returns a dictionary containing the state
+           of the nunchuk joystick in the form:
+            {
+            "state": {
+                    "raw": tuple of the raw joystick readings
+                           from cwiid in the form (x, y),
+                    "clipped": tuple of the raw values,
+                               clipped to the min/max range,
+                    "normalised": the 'clipped' tuple, with
+                                  the values mapped to the range -1 to 1
                 }
             "range": The min/max range to clip raw values to
             }

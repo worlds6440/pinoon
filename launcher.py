@@ -11,9 +11,15 @@ import cwiid
 from wiimote import Wiimote, WiimoteException
 import drivetrain
 import rc
+import logging
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 start_pin = 24
 shutdown_pin = 18
+power_led_pin = 21
+wiimote_led_pin = 13
+rc_led_pin = 7
 pwm_address = 0x40
 
 # Thread pointer for RC mode
@@ -37,6 +43,17 @@ os.chdir(project_dir)
 GPIO.setmode(GPIO.BCM)
 GPIO.setup(start_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
 GPIO.setup(shutdown_pin, GPIO.IN, pull_up_down=GPIO.PUD_UP)
+# Setup GPIO pins for LEDs
+GPIO.setup(power_led_pin, GPIO.OUT)
+GPIO.setup(wiimote_led_pin, GPIO.OUT)
+GPIO.setup(rc_led_pin, GPIO.OUT)
+
+# Turn Power LED ON
+GPIO.output(power_led_pin, GPIO.HIGH)
+# Turn Wiimote connection led OFF
+GPIO.output(wiimote_led_pin, GPIO.LOW)
+# Turn RC Mode led OFF
+GPIO.output(rc_led_pin, GPIO.LOW)
 
 
 def kill_rc_thread():
@@ -53,6 +70,8 @@ def shutdown_callback(channel):
     """ Threaded callback function called
     when user presses the shutdown button """
     print("Shutting down pi")
+    # Turn Power LED OFF
+    GPIO.output(power_led_pin, GPIO.LOW)
     os.system("sudo shutdown -h now")
 
 
@@ -69,10 +88,14 @@ def start_wiimote_callback(channel):
         rc_class = rc.rc(drive, wiimote)
         rc_thread = threading.Thread(target=rc_class.run)
         rc_thread.start()
+        # Turn RC Mode led ON
+        GPIO.output(rc_led_pin, GPIO.HIGH)
     else:
         print("Stopping RC Mode")
         # Kill Thread
         kill_rc_thread()
+        # Turn RC Mode led OFF
+        GPIO.output(rc_led_pin, GPIO.LOW)
 
 
 def set_neutral(drive, wiimote):
@@ -125,6 +148,9 @@ while not wiimote:
         wiimote = None
         # logging.error("Could not connect to wiimote. please try again")
 
+# Turn Wiimote connection led ON
+GPIO.output(wiimote_led_pin, GPIO.HIGH)
+
 try:
     # Constantly check wiimote for button presses
     while wiimote:
@@ -151,6 +177,13 @@ try:
 
 except (Exception, KeyboardInterrupt) as e:
     print("Exception OR Ctrl+C Pressed")
+
+# Turn Power LED OFF
+GPIO.output(power_led_pin, GPIO.LOW)
+# Turn Wiimote connection led OFF
+GPIO.output(wiimote_led_pin, GPIO.LOW)
+# Turn RC Mode led OFF
+GPIO.output(rc_led_pin, GPIO.LOW)
 
 # Finally, always close active threads
 kill_rc_thread()

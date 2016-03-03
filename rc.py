@@ -21,6 +21,7 @@ class rc:
             buttons_state = self.wiimote.get_buttons()
             nunchuk_buttons_state = self.wiimote.get_nunchuk_buttons()
             joystick_state = self.wiimote.get_joystick_state()
+            nunchuk_accel_state = self.wiimote.get_nunchuk_accel_state()
 
             # If 'C' is pressed, go to full speed
             if (nunchuk_buttons_state & cwiid.NUNCHUK_BTN_C):
@@ -43,9 +44,13 @@ class rc:
             # Get the normalised joystick postion as a tuple of
             # (throttle, steering), where values are in the range -1 to 1
             joystick_pos = joystick_state['state']['normalised']
+            nunchuck_accel = nunchuk_accel_state['state']['normalised']
             throttle, steering = joystick_pos
+            accel_x, accel_y, accel_z = nunchuck_accel
             logging.info("mixing channels: {0} : {1}".format(throttle, steering))
-            self.drive.mix_channels_and_assign(throttle, steering)
+            logging.info("accel channels: {0} : {1} : {2}".format(accel_x, accel_y, accel_z))
+            # self.drive.mix_channels_and_assign(throttle, steering)
+            self.drive.mix_channels_omni_and_assign(throttle, steering, accel_x)
 
             time.sleep(0.05)
         # Final thing we do leaving RC mode is to
