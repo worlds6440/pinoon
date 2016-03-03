@@ -11,6 +11,9 @@ import cwiid
 from wiimote import Wiimote, WiimoteException
 import drivetrain
 import rc
+import logging
+
+logging.basicConfig(stream=sys.stdout, level=logging.INFO)
 
 start_pin = 24
 shutdown_pin = 18
