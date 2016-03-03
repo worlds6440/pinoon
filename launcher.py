@@ -98,13 +98,15 @@ def set_drive(drive, wiimote):
 GPIO.add_event_detect(
     shutdown_pin,
     GPIO.FALLING,
-    callback=shutdown_callback
+    callback=shutdown_callback,
+    bouncetime=300
 )
 # Callback function
 GPIO.add_event_detect(
     start_pin,
     GPIO.FALLING,
-    callback=start_wiimote_callback
+    callback=start_wiimote_callback,
+    bouncetime=300
 )
 
 
