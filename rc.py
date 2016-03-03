@@ -44,7 +44,7 @@ class rc:
             # Get the normalised joystick postion as a tuple of
             # (throttle, steering), where values are in the range -1 to 1
             joystick_pos = joystick_state['state']['normalised']
-            nunchuck_accel = nunchuk_accel_state['state']['raw']
+            nunchuck_accel = nunchuk_accel_state['state']['normalised']
             throttle, steering = joystick_pos
             accel_x, accel_y, accel_z = nunchuck_accel
             logging.info("mixing channels: {0} : {1}".format(throttle, steering))
