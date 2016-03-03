@@ -49,7 +49,8 @@ class rc:
             accel_x, accel_y, accel_z = nunchuck_accel
             logging.info("mixing channels: {0} : {1}".format(throttle, steering))
             logging.info("accel channels: {0} : {1} : {2}".format(accel_x, accel_y, accel_z))
-            self.drive.mix_channels_and_assign(throttle, steering)
+            # self.drive.mix_channels_and_assign(throttle, steering)
+            self.drive.mix_channels_omni_and_assign(throttle, steering, accel_x)
 
             time.sleep(0.05)
         # Final thing we do leaving RC mode is to

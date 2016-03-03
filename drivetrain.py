@@ -14,6 +14,7 @@ class DriveTrain():
         pwm_freq=50,
         left_channel=0,
         right_channel=1,
+        front_channel=2,
         aux_channel1=4,
         aux_channel2=5,
         aux_channel3=6,
@@ -36,6 +37,7 @@ class DriveTrain():
         self.channels = {
             'left': left_channel,
             'right': right_channel,
+            'front': front_channel,
         }
 
         self.pwm = PWM(pwm_i2c, debug=debug)
@@ -79,6 +81,7 @@ class DriveTrain():
         """Send the neutral servo position to both motor controllers"""
         self.set_servo_pulse(self.channels['left'], self.servo_mid)
         self.set_servo_pulse(self.channels['right'], self.servo_mid)
+        self.set_servo_pulse(self.channels['front'], self.servo_mid)
 
     def set_full_speed(self):
         """Set servo range to FULL extents"""
@@ -113,6 +116,56 @@ class DriveTrain():
         # Set the servo pulses for left and right channels
         self.set_servo_pulse(self.channels['left'], output_pulse_left)
         self.set_servo_pulse(self.channels['right'], output_pulse_right)
+
+    def mix_channels_omni_and_assign(self, throttle, steering, rotate):
+        """ Take values for throttle, steering and rotation channels
+        in the range of -1 to 1, convert to servo pulses, and then mix
+        the channels and assign to the left, right and front motors. """
+        if not self.drive_enabled:
+            return
+        pulse_throttle = self._map_channel_value(throttle)
+        pulse_steering = self._map_channel_value(steering)
+        pulse_rotate = self._map_channel_value(rotate)
+
+        # Appears to be RC signal in, we don't need this section
+        # VFwd = pulseIn(pin[0], HIGH)-1500
+        # VRotate = pulseIn(pin[1], HIGH)-1500
+        # VSide =pulseIn(pin[2], HIGH)-1500
+        round_dp = 0
+
+        # VFront = constrain(-VSide-VRotate, -500, 500)+1500
+        output_pulse_front = clip(
+            (-pulse_steering-pulse_rotate),
+            self.servo_min,
+            self.servo_max
+        )
+        # VLeft = constrain(-round(VSide*0.15+VFwd*0.86-VRotate),-500,500)+1500
+        output_pulse_left = clip(
+            -round(
+                   pulse_steering*0.15+pulse_throttle*0.86-pulse_rotate,
+                   round_dp
+            ),
+            self.servo_min,
+            self.servo_max
+        )
+        # VRight = constrain(round(VSide*0.15-VFwd*0.86-VRotate),-500,500)+1500
+        output_pulse_right = clip(
+            round(
+                  pulse_steering*0.15-pulse_throttle*0.86-pulse_rotate,
+                  round_dp
+            ),
+            self.servo_min,
+            self.servo_max
+        )
+
+        # where pulsein recieves a ~1000-2000 pulse,
+        # 1000 = full left/back,
+        # 2000 = full right/forward. so Vfwd is +/-500, 0 = stopped.
+
+        # Set the servo pulses for left and right channels
+        self.set_servo_pulse(self.channels['left'], output_pulse_left)
+        self.set_servo_pulse(self.channels['right'], output_pulse_right)
+        self.set_servo_pulse(self.channels['front'], output_pulse_front)
 
     def _map_channel_value(self, value):
         """Map the supplied value from the range -1 to 1 to a corresponding

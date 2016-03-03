@@ -21,7 +21,7 @@ class Wiimote():
         acc_range=None
     ):
         self.joystick_range = joystick_range if joystick_range else [50, 200]
-        self.acc_range = acc_range if acc_range else [50, 200]
+        self.acc_range = acc_range if acc_range else [75, 175]
         self.wm = None
         attempts = 0
 
