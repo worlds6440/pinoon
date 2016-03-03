@@ -130,7 +130,7 @@ try:
     while wiimote:
         buttons_state = wiimote.get_buttons()
         nunchuk_buttons_state = wiimote.get_nunchuk_buttons()
-        joystick_state = wiimote.get_joystick_state()
+        joystick_state = wiimote.get_nunchuck_state()
 
         # Test if B or Z button is pressed
         if (

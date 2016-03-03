@@ -17,9 +17,11 @@ class Wiimote():
     def __init__(
         self,
         max_tries=5,
-        joystick_range=None
+        joystick_range=None,
+        accel_range=None
     ):
         self.joystick_range = joystick_range if joystick_range else [50, 200]
+        self.accel_range = accel_range if accel_range else [50, 200]
         self.wm = None
         attempts = 0
 
@@ -53,15 +55,28 @@ class Wiimote():
         Returns: dict"""
         return self.wm.state if self.wm else None
 
-    def get_joystick_state(self):
-        """Returns a dictionary containing the state of the nunchuk joystick in the form:
+    def get_nunchuck_state(self):
+        """Returns a dictionary containing the state of the nunchuk
+        joystick in the form:
             {
             "state": {
-                    "raw": tuple of the raw joystick readings from cwiid in the form (x, y),
-                    "clipped": tuple of the raw values, clipped to the min/max range,
-                    "normalised": the 'clipped' tuple, with the values mapped to the range -1 to 1
+                "joystick": {
+                    "raw": tuple of the raw joystick readings from cwiid
+                    in the form (x, y),
+                    "clipped": tuple of the raw values, clipped to the
+                    min/max range,
+                    "normalised": the 'clipped' tuple, with the values mapped
+                    to the range -1 to 1
+                    },
+                    "accel": {
+                        "raw": tuple of the raw accelerometer reading from
+                        cwiid in he form (x, y, x)
+                    }
                 }
-            "range": The min/max range to clip raw values to
+            "range": {
+                "joystick": The min/max range to clip raw values to,
+                "accel": The min/max range to clip raw values to
+                }
             }
         """
         if 'nunchuk' not in self.get_state():
@@ -69,6 +84,14 @@ class Wiimote():
             return None
         else:
             joystick_state_raw = self.wm.state['nunchuk']['stick']
+            # TODO: determine bounds of acceleromter readings and provide
+            # clipped and normalised results in 'accel' dict.
+            accel_state_raw = (
+                self.wm.state['nunchuk']['acc'][cwiid.X],
+                self.wm.state['nunchuk']['acc'][cwiid.Y],
+                self.wm.state['nunchuk']['acc'][cwiid.Z],
+            )
+
             joystick_state_clipped = [
                 clip(channel, *self.joystick_range)
                 for channel
@@ -80,11 +103,17 @@ class Wiimote():
                 in joystick_state_raw
             ]
             return dict(
-                range=self.joystick_range,
+                range=dict(
+                    joystick=self.joystick_range),
                 state=dict(
-                    raw=joystick_state_raw,
-                    clipped=joystick_state_clipped,
-                    normalised=joystick_state_normalised
+                    joystick=dict(
+                        raw=joystick_state_raw,
+                        clipped=joystick_state_clipped,
+                        normalised=joystick_state_normalised
+                    ),
+                    accel=dict(
+                        raw=accel_state_raw
+                    )
                 )
             )
 
