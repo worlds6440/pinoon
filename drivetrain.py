@@ -7,7 +7,7 @@ from numpy import interp, clip
 class DriveTrain():
     """Instantiate a 2WD drivetrain, utilising 2x ESCs,
     controlled using a 2 axis (throttle, steering)
-    system + skittle accessories"""
+    system"""
     def __init__(
         self,
         pwm_i2c=0x40,
@@ -22,7 +22,6 @@ class DriveTrain():
     ):
         # Main set of motor controller ranges
         self.servo_min = 900
-        #self.servo_mid = 1555
         self.servo_mid = 1650
         self.servo_max = 2300
 
@@ -34,37 +33,9 @@ class DriveTrain():
         self.servo_low_min = int(self.servo_mid - (self.servo_mid-self.servo_full_min) / speed_divisor)
         self.servo_low_max = int(self.servo_mid + (self.servo_full_max-self.servo_mid) / speed_divisor)
 
-        # Skittle launcher servos
-        self.skittle_left_servo_closed = 1650
-        self.skittle_left_servo_open = 1950
-        self.skittle_right_servo_closed = 1600
-        self.skittle_right_servo_open = 1200
-        self.skittle_left_servo_init = 1300
-        self.skittle_right_servo_init = 1300
-
-        # Skittle launcher motors
-        self.skittle_left_motor_stopped = 2000
-        self.skittle_left_motor_full_speed = 1000
-        self.skittle_right_motor_stopped = 2000
-        self.skittle_right_motor_full_speed = 1000
-
-        # Proximity probe servo limites
-        self.proximity_servo_min = 1000
-        self.proximity_servo_max = 2000
-
-        # Proximity probe fan limits
-        self.proximity_blower_esc_stopped = 1000
-        self.proximity_blower_esc_max = 2000
-
         self.channels = {
             'left': left_channel,
             'right': right_channel,
-            'blower': aux_channel1,
-            'probe_servo': aux_channel2,
-            'skittle_left_servo': aux_channel1,
-            'skittle_right_servo': aux_channel2,
-            'skittle_left_motor': aux_channel3,
-            'skittle_right_motor': aux_channel4
         }
 
         self.pwm = PWM(pwm_i2c, debug=debug)
@@ -88,7 +59,11 @@ class DriveTrain():
             # logging.debug("%d us per bit" % pulseLength)
             # pulse *= 1000
             pulse /= pulseLength
-            logging.debug("pulse {0} - channel {1}".format(int(pulse), channel))
+            logging.debug(
+                "pulse {0} - channel {1}".format(
+                    int(pulse), channel
+                )
+            )
             self.pwm.setPWM(channel, 0, int(pulse))
 
     def enable_drive(self):
@@ -125,23 +100,15 @@ class DriveTrain():
         pulse_throttle = self._map_channel_value(throttle)
         pulse_steering = self._map_channel_value(steering)
         output_pulse_left = clip(
-            #(-pulse_throttle + pulse_steering) / 2 + self.servo_mid,
             (pulse_throttle + pulse_steering) / 2,
             self.servo_min,
             self.servo_max
         )
         output_pulse_right = clip(
-            #(pulse_throttle + pulse_steering) / 2,
             (pulse_throttle - pulse_steering) / 2 + self.servo_mid,
             self.servo_min,
             self.servo_max
         )
-
-        # logging.info(
-        #    "output pulse left: {0} output pulse right : {1}".format(
-        #        output_pulse_left, output_pulse_right
-        #    )
-        #)
 
         # Set the servo pulses for left and right channels
         self.set_servo_pulse(self.channels['left'], output_pulse_left)
@@ -156,48 +123,4 @@ class DriveTrain():
                 [-1, 1],
                 [self.servo_min, self.servo_max]
             )
-        )
-
-    def set_skittle_arms_closed(self):
-        """Send the back servo position to both skittle servos"""
-        self.set_servo_pulse(
-            self.channels['skittle_left_servo'],
-            self.skittle_left_servo_closed
-        )
-        self.set_servo_pulse(
-            self.channels['skittle_right_servo'],
-            self.skittle_right_servo_closed
-        )
-
-    def set_skittle_arms_open(self):
-        """Send the forward servo position to both skittle servos"""
-        self.set_servo_pulse(
-            self.channels['skittle_left_servo'],
-            self.skittle_left_servo_open
-        )
-        self.set_servo_pulse(
-            self.channels['skittle_right_servo'],
-            self.skittle_right_servo_open
-        )
-
-    def set_skittle_motors_on(self):
-        """Send the on servo position to both skittle escs"""
-        self.set_servo_pulse(
-            self.channels['skittle_left_motor'],
-            self.skittle_left_motor_full_speed
-        )
-        self.set_servo_pulse(
-            self.channels['skittle_right_motor'],
-            self.skittle_right_motor_full_speed
-        )
-
-    def set_skittle_motors_off(self):
-        """Send the stopped servo position to both skittle escs"""
-        self.set_servo_pulse(
-            self.channels['skittle_left_motor'],
-            self.skittle_left_motor_stopped
-        )
-        self.set_servo_pulse(
-            self.channels['skittle_right_motor'],
-            self.skittle_right_motor_stopped
         )
