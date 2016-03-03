@@ -22,9 +22,6 @@ class rc:
             nunchuk_buttons_state = self.wiimote.get_nunchuk_buttons()
             joystick_state = self.wiimote.get_joystick_state()
 
-            #logging.debug("joystick_state: {0}".format(joystick_state))
-            #logging.debug("button state {0}".format(buttons_state))
-
             # If 'C' is pressed, go to full speed
             if (nunchuk_buttons_state & cwiid.NUNCHUK_BTN_C):
                 self.drive.set_full_speed()

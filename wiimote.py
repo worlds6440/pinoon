@@ -64,7 +64,7 @@ class Wiimote():
             "range": The min/max range to clip raw values to
             }
         """
-        if not 'nunchuk' in self.get_state():
+        if 'nunchuk' not in self.get_state():
             logging.debug("state: {0}".format(self.get_state()))
             return None
         else:
@@ -96,7 +96,7 @@ class Wiimote():
 
     def get_nunchuk_buttons(self):
         """Get just the current button state of the wiimote nunchuk"""
-        if not 'nunchuk' in self.get_state():
+        if 'nunchuk' not in self.get_state():
             return None
         buttons_state = self.wm.state['nunchuk']['buttons']
 
