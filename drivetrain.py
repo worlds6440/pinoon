@@ -137,27 +137,27 @@ class DriveTrain():
 
         # VFront = constrain(-VSide-VRotate, -500, 500)+1500
         output_front = clip(
-            (-side-rotate),
-            -1,
-            +1
+            (-float(side)-float(rotate)),
+            -1.0,
+            +1.0
         )
         # VLeft = constrain(-round(VSide*0.15+VFwd*0.86-VRotate),-500,500)+1500
         output_left = clip(
             -round(
-                   side*0.15+forward*0.86-rotate,
+                   float(side)*0.15+float(forward)*0.86-float(rotate),
                    round_dp
             ),
-            -1,
-            +1
+            -1.0,
+            +1.0
         )
         # VRight = constrain(round(VSide*0.15-VFwd*0.86-VRotate),-500,500)+1500
         output_right = clip(
             round(
-                  side*0.15-forward*0.86-rotate,
+                  float(side)*0.15-float(forward)*0.86-float(rotate),
                   round_dp
             ),
-            -1,
-            +1
+            -1.0,
+            +1.0
         )
 
         # where pulsein recieves a ~1000-2000 pulse,
@@ -168,6 +168,7 @@ class DriveTrain():
         output_pulse_right = self._map_channel_value(output_right, 2)
         output_pulse_front = self._map_channel_value(output_front, 3)
 
+        logging.info("mixing values LRF: {0} : {1} : {2}".format(output_left, output_right, output_front))
         logging.info("mixing pulses LRF: {0} : {1} : {2}".format(output_pulse_left, output_pulse_right, output_pulse_front))
 
         # Set the servo pulses for left and right channels
@@ -181,24 +182,27 @@ class DriveTrain():
         if motor == 1:
             return int(
                 interp(
-                    value,
-                    [-1, 1],
-                    [self.motor1_servo_min, self.motor1_servo_max]
+                    float(value),
+                    [-1.0, 1.0],
+                    [float(self.motor1_servo_min),
+                     float(self.motor1_servo_max)]
                 )
             )
         if motor == 2:
             return int(
                 interp(
-                    value,
-                    [-1, 1],
-                    [self.motor2_servo_min, self.motor2_servo_max]
+                    float(value),
+                    [-1.0, 1.0],
+                    [float(self.motor2_servo_min),
+                     float(self.motor2_servo_max)]
                 )
             )
         if motor == 3:
             return int(
                 interp(
-                    value,
-                    [-1, 1],
-                    [self.motor3_servo_min, self.motor3_servo_max]
+                    float(value),
+                    [-1.0, 1.0],
+                    [float(self.motor3_servo_min),
+                     float(self.motor3_servo_max)]
                 )
             )
