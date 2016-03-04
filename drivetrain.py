@@ -22,17 +22,38 @@ class DriveTrain():
         debug=False
     ):
         # Main set of motor controller ranges
-        self.servo_min = 1000
-        self.servo_mid = 1500
-        self.servo_max = 2000
-
-        # Full speed range
-        self.servo_full_min = 1000
-        self.servo_full_max = 2000
         # Low speed range is 1/4 of full speed
         speed_divisor = 2
-        self.servo_low_min = int(self.servo_mid - (self.servo_mid-self.servo_full_min) / speed_divisor)
-        self.servo_low_max = int(self.servo_mid + (self.servo_full_max-self.servo_mid) / speed_divisor)
+
+        # *** MOTOR 1 *** LEFT
+        # Full speed range
+        self.motor1_servo_mid = 1500
+        self.motor1_servo_full_min = 1000
+        self.motor1_servo_full_max = 2000
+        self.motor1_servo_min = self.motor1_servo_full_min
+        self.motor1_servo_max = self.motor1_servo_full_max
+        self.motor1_servo_low_min = int(self.motor1_servo_mid - (self.motor1_servo_mid-self.motor1_servo_full_min) / speed_divisor)
+        self.motor1_servo_low_max = int(self.motor1_servo_mid + (self.motor1_servo_full_max-self.motor1_servo_mid) / speed_divisor)
+
+        # *** MOTOR 2 *** RIGHT
+        # Full speed range
+        self.motor2_servo_mid = 1500
+        self.motor2_servo_full_min = 1000
+        self.motor2_servo_full_max = 2000
+        self.motor2_servo_min = self.motor2_servo_full_min
+        self.motor2_servo_max = self.motor2_servo_full_max
+        self.motor2_servo_low_min = int(self.motor2_servo_mid - (self.motor2_servo_mid-self.motor2_servo_full_min) / speed_divisor)
+        self.motor2_servo_low_max = int(self.motor2_servo_mid + (self.motor2_servo_full_max-self.motor2_servo_mid) / speed_divisor)
+
+        # *** MOTOR 3 *** FRONT
+        # Full speed range
+        self.motor3_servo_mid = 1500
+        self.motor3_servo_full_min = 1000
+        self.motor3_servo_full_max = 2000
+        self.motor3_servo_min = self.motor3_servo_full_min
+        self.motor3_servo_max = self.motor3_servo_full_max
+        self.motor3_servo_low_min = int(self.motor3_servo_mid - (self.motor3_servo_mid-self.motor3_servo_full_min) / speed_divisor)
+        self.motor3_servo_low_max = int(self.motor3_servo_mid + (self.motor3_servo_full_max-self.motor3_servo_mid) / speed_divisor)
 
         self.channels = {
             'left': left_channel,
@@ -79,43 +100,27 @@ class DriveTrain():
 
     def set_neutral(self):
         """Send the neutral servo position to both motor controllers"""
-        self.set_servo_pulse(self.channels['left'], self.servo_mid)
-        self.set_servo_pulse(self.channels['right'], self.servo_mid)
-        self.set_servo_pulse(self.channels['front'], self.servo_mid)
+        self.set_servo_pulse(self.channels['left'], self.motor1_servo_mid)
+        self.set_servo_pulse(self.channels['right'], self.motor2_servo_mid)
+        self.set_servo_pulse(self.channels['front'], self.motor3_servo_mid)
 
     def set_full_speed(self):
         """Set servo range to FULL extents"""
-        self.servo_min = self.servo_full_min
-        self.servo_max = self.servo_full_max
+        self.motor1_servo_min = self.motor1_servo_full_min
+        self.motor1_servo_max = self.motor1_servo_full_max
+        self.motor2_servo_min = self.motor2_servo_full_min
+        self.motor2_servo_max = self.motor2_servo_full_max
+        self.motor3_servo_min = self.motor3_servo_full_min
+        self.motor3_servo_max = self.motor3_servo_full_max
 
     def set_low_speed(self):
         """Limit servo range extents"""
-        self.servo_min = self.servo_low_min
-        self.servo_max = self.servo_low_max
-
-    # TODO - flesh out setters for raw pulse values (both channels)
-    def mix_channels_and_assign(self, throttle, steering):
-        """Take values for the throttle and steering channels in the range
-        -1 to 1, convert into servo pulses, and then mix the channels and
-        assign to the left/right motor controllers"""
-        if not self.drive_enabled:
-            return
-        pulse_throttle = self._map_channel_value(throttle)
-        pulse_steering = self._map_channel_value(steering)
-        output_pulse_left = clip(
-            (pulse_throttle + pulse_steering) / 2,
-            self.servo_min,
-            self.servo_max
-        )
-        output_pulse_right = clip(
-            (pulse_throttle - pulse_steering) / 2 + self.servo_mid,
-            self.servo_min,
-            self.servo_max
-        )
-
-        # Set the servo pulses for left and right channels
-        self.set_servo_pulse(self.channels['left'], output_pulse_left)
-        self.set_servo_pulse(self.channels['right'], output_pulse_right)
+        self.motor1_servo_min = self.motor1_servo_low_min
+        self.motor1_servo_max = self.motor1_servo_low_max
+        self.motor2_servo_min = self.motor2_servo_low_min
+        self.motor2_servo_max = self.motor2_servo_low_max
+        self.motor3_servo_min = self.motor3_servo_low_min
+        self.motor3_servo_max = self.motor3_servo_low_max
 
     def mix_channels_omni_and_assign(self, forward, side, rotate):
         """ Take values for throttle, steering and rotation channels
@@ -123,9 +128,6 @@ class DriveTrain():
         the channels and assign to the left, right and front motors. """
         if not self.drive_enabled:
             return
-        pulse_forward = self._map_channel_value(forward) - self.servo_mid
-        pulse_side = self._map_channel_value(side) - self.servo_mid
-        pulse_rotate = self._map_channel_value(rotate) - self.servo_mid
 
         # Appears to be RC signal in, we don't need this section
         # VFwd = pulseIn(pin[0], HIGH)-1500
@@ -133,40 +135,38 @@ class DriveTrain():
         # VSide =pulseIn(pin[2], HIGH)-1500
         round_dp = 0
 
-        clip_value = (self.servo_max - self.servo_min) / 2.0
-
         # VFront = constrain(-VSide-VRotate, -500, 500)+1500
-        output_pulse_front = clip(
-            (-pulse_side-pulse_rotate),
-            -clip_value,
-            +clip_value
+        output_front = clip(
+            (-side-rotate),
+            -1,
+            +1
         )
         # VLeft = constrain(-round(VSide*0.15+VFwd*0.86-VRotate),-500,500)+1500
-        output_pulse_left = clip(
+        output_left = clip(
             -round(
-                   pulse_side*0.15+pulse_forward*0.86-pulse_rotate,
+                   side*0.15+forward*0.86-rotate,
                    round_dp
             ),
-            -clip_value,
-            +clip_value
+            -1,
+            +1
         )
         # VRight = constrain(round(VSide*0.15-VFwd*0.86-VRotate),-500,500)+1500
-        output_pulse_right = clip(
+        output_right = clip(
             round(
-                  pulse_side*0.15-pulse_forward*0.86-pulse_rotate,
+                  side*0.15-forward*0.86-rotate,
                   round_dp
             ),
-            -clip_value,
-            +clip_value
+            -1,
+            +1
         )
 
         # where pulsein recieves a ~1000-2000 pulse,
         # 1000 = full left/back,
         # 2000 = full right/forward. so Vfwd is +/-500, 0 = stopped.
 
-        output_pulse_left = output_pulse_left + self.servo_mid
-        output_pulse_right = output_pulse_right + self.servo_mid
-        output_pulse_front = output_pulse_front + self.servo_mid
+        output_pulse_left = self._map_channel_value(output_left, 1)
+        output_pulse_right = self._map_channel_value(output_right, 2)
+        output_pulse_front = self._map_channel_value(output_front, 3)
 
         logging.info("mixing pulses LRF: {0} : {1} : {2}".format(output_pulse_left, output_pulse_right, output_pulse_front))
 
@@ -175,13 +175,30 @@ class DriveTrain():
         self.set_servo_pulse(self.channels['right'], output_pulse_right)
         self.set_servo_pulse(self.channels['front'], output_pulse_front)
 
-    def _map_channel_value(self, value):
+    def _map_channel_value(self, value, motor):
         """Map the supplied value from the range -1 to 1 to a corresponding
         value within the range servo_min to servo_max"""
-        return int(
-            interp(
-                value,
-                [-1, 1],
-                [self.servo_min, self.servo_max]
+        if motor == 1:
+            return int(
+                interp(
+                    value,
+                    [-1, 1],
+                    [self.motor1_servo_min, self.motor1_servo_max]
+                )
             )
-        )
+        if motor == 2:
+            return int(
+                interp(
+                    value,
+                    [-1, 1],
+                    [self.motor2_servo_min, self.motor2_servo_max]
+                )
+            )
+        if motor == 3:
+            return int(
+                interp(
+                    value,
+                    [-1, 1],
+                    [self.motor3_servo_min, self.motor3_servo_max]
+                )
+            )
