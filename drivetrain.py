@@ -133,7 +133,6 @@ class DriveTrain():
         # VFwd = pulseIn(pin[0], HIGH)-1500
         # VRotate = pulseIn(pin[1], HIGH)-1500
         # VSide =pulseIn(pin[2], HIGH)-1500
-        round_dp = 0
 
         # VFront = constrain(-VSide-VRotate, -500, 500)+1500
         output_front = clip(
@@ -143,11 +142,8 @@ class DriveTrain():
         )
         # VLeft = constrain(-round(VSide*0.15+VFwd*0.86-VRotate),-500,500)+1500
         output_left = clip(
-            float(
-                -round(
-                   float(side)*0.15+float(forward)*0.86-float(rotate),
-                   round_dp
-                )
+            -float(
+                   float(side)*0.15+float(forward)*0.86-float(rotate)
             ),
             -1.0,
             +1.0
@@ -155,10 +151,7 @@ class DriveTrain():
         # VRight = constrain(round(VSide*0.15-VFwd*0.86-VRotate),-500,500)+1500
         output_right = clip(
             float(
-                round(
-                    float(side)*0.15-float(forward)*0.86-float(rotate),
-                    round_dp
-                )
+                    float(side)*0.15-float(forward)*0.86-float(rotate)
             ),
             -1.0,
             +1.0
