@@ -164,13 +164,16 @@ class DriveTrain():
         # 1000 = full left/back,
         # 2000 = full right/forward. so Vfwd is +/-500, 0 = stopped.
 
+        output_pulse_left = output_pulse_left + self.servo_mid
+        output_pulse_right = output_pulse_right + self.servo_mid
+        output_pulse_front = output_pulse_front + self.servo_mid
+
+        logging.info("mixing pulses LRF: {0} : {1} : {2}".format(output_pulse_left, output_pulse_right, output_pulse_front))
+
         # Set the servo pulses for left and right channels
-        self.set_servo_pulse(self.channels['left'],
-                             output_pulse_left + self.servo_mid)
-        self.set_servo_pulse(self.channels['right'],
-                             output_pulse_right + self.servo_mid)
-        self.set_servo_pulse(self.channels['front'],
-                             output_pulse_front + self.servo_mid)
+        self.set_servo_pulse(self.channels['left'], output_pulse_left)
+        self.set_servo_pulse(self.channels['right'], output_pulse_right)
+        self.set_servo_pulse(self.channels['front'], output_pulse_front)
 
     def _map_channel_value(self, value):
         """Map the supplied value from the range -1 to 1 to a corresponding
