@@ -22,9 +22,21 @@ class DriveTrain():
         debug=False
     ):
         pi = 3.14159265359
-        self.left_motor_angle = 60 * (float(pi) / float(180.0))
-        self.front_motor_angle = 180 * (float(pi) / float(180.0))
-        self.right_motor_angle = 300 * (float(pi) / float(180.0))
+        left_motor_angle_deg = 60.0 + 90.0
+        front_motor_angle_deg = 180.0 + 90.0
+        right_motor_angle_deg = 300.0 + 90.0
+
+        # Ensure angles are (0 : 360)
+        if left_motor_angle_deg > 360.0:
+            left_motor_angle_deg = left_motor_angle_deg-360.0
+        if front_motor_angle_deg > 360.0:
+            front_motor_angle_deg = front_motor_angle_deg-360.0
+        if right_motor_angle_deg > 360.0:
+            right_motor_angle_deg = right_motor_angle_deg-360.0
+
+        self.left_motor_angle_rad = left_motor_angle_deg * (float(pi) / float(180.0))
+        self.front_motor_angle_rad = front_motor_angle_deg * (float(pi) / float(180.0))
+        self.right_motor_angle_rad = right_motor_angle_deg * (float(pi) / float(180.0))
 
         # Main set of motor controller ranges
         # Low speed range is 1/4 of full speed
@@ -170,9 +182,9 @@ class DriveTrain():
         desired_direction = np.arctan2(forward, side)
         velocity = np.sqrt(np.power(side, 2) + np.power(forward, 2))
         # Calculate apropriate motor speeds (-1, 1)
-        output_left = np.dot(velocity, np.cos(self.left_motor_angle - desired_direction))
-        output_right = np.dot(velocity, np.cos(self.right_motor_angle - desired_direction))
-        output_front = np.dot(velocity, np.cos(self.front_motor_angle - desired_direction))
+        output_left = np.dot(velocity, np.cos(self.left_motor_angle_rad - desired_direction))
+        output_right = np.dot(velocity, np.cos(self.right_motor_angle_rad - desired_direction))
+        output_front = np.dot(velocity, np.cos(self.front_motor_angle_rad - desired_direction))
         # Clip to -1,1
         clip(output_left, -1.0, 1.0)
         clip(output_right, -1.0, 1.0)
