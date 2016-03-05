@@ -139,7 +139,7 @@ class DriveTrain():
         self.motor3_servo_min = self.motor3_servo_low_min
         self.motor3_servo_max = self.motor3_servo_low_max
 
-    def mix_channels_omni_and_assign(self, side, forward, rotate):
+    def mix_channels_omni_and_assign(self, forward, side, rotate):
         """ Take values for throttle, steering and rotation channels
         in the range of -1 to 1, convert to servo pulses, and then mix
         the channels and assign to the left, right and front motors. """
