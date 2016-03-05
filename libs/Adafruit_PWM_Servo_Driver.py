@@ -40,12 +40,12 @@ class PWM :
     cls.general_call_i2c.writeRaw8(0x06)        # SWRST
 
   def __init__(self, address=0x40, debug=False):
-    self.i2c = Adafruit_I2C(address)
+    self.i2c = Adafruit_I2C(address, 0)  # Manually hard coded to use I2c bus ZERO
     self.i2c.debug = debug
     self.address = address
     self.debug = debug
     if (self.debug):
-      print "Reseting PCA9685 MODE1 (without SLEEP) and MODE2"
+      print "Resetting PCA9685 MODE1 (without SLEEP) and MODE2"
     self.setAllPWM(0, 0)
     self.i2c.write8(self.__MODE2, self.__OUTDRV)
     self.i2c.write8(self.__MODE1, self.__ALLCALL)
