@@ -40,7 +40,7 @@ class PWM :
     cls.general_call_i2c.writeRaw8(0x06)        # SWRST
 
   def __init__(self, address=0x40, debug=False):
-    self.i2c = Adafruit_I2C(address, 0)  # Manually hard coded to use I2c bus ZERO
+    self.i2c = Adafruit_I2C(address)
     self.i2c.debug = debug
     self.address = address
     self.debug = debug
