@@ -2,7 +2,7 @@ from __future__ import division
 import logging
 from libs.Adafruit_PWM_Servo_Driver import PWM
 from numpy import interp, clip
-
+import numpy as np
 
 class DriveTrain():
     """Instantiate a 2WD drivetrain, utilising 2x ESCs,
@@ -135,31 +135,43 @@ class DriveTrain():
         # VSide =pulseIn(pin[2], HIGH)-1500
 
         # VFront = constrain(-VSide-VRotate, -500, 500)+1500
-        output_front = clip(
-            float(-float(side)-float(rotate)),
-            -1.0,
-            +1.0
-        )
+        # output_front = clip(
+        #    float(-float(side)-float(rotate)),
+        #    -1.0,
+        #    +1.0
+        # )
         # VLeft = constrain(-round(VSide*0.15+VFwd*0.86-VRotate),-500,500)+1500
-        output_left = clip(
-            -float(
-                   float(side)*0.15+float(forward)*0.86-float(rotate)
-            ),
-            -1.0,
-            +1.0
-        )
+        # output_left = clip(
+        #    -float(
+        #           float(side)*0.15+float(forward)*0.86-float(rotate)
+        #    ),
+        #    -1.0,
+        #    +1.0
+        # )
         # VRight = constrain(round(VSide*0.15-VFwd*0.86-VRotate),-500,500)+1500
-        output_right = clip(
-            float(
-                    float(side)*0.15-float(forward)*0.86-float(rotate)
-            ),
-            -1.0,
-            +1.0
-        )
-
+        # output_right = clip(
+        #    float(
+        #            float(side)*0.15-float(forward)*0.86-float(rotate)
+        #    ),
+        #    -1.0,
+        #    +1.0
+        # )
         # where pulsein recieves a ~1000-2000 pulse,
         # 1000 = full left/back,
         # 2000 = full right/forward. so Vfwd is +/-500, 0 = stopped.
+
+        # Test 3 way mixer
+        # Convert joystick vector to angle and magnitude
+        desired_direction = np.arctan2(forward, side)
+        velocity = np.sqrt(np.power(side, 2) + np.power(forward, 2))
+        # Calculate apropriate motor speeds (-1, 1)
+        output_left = np.dot(velocity, np.cos(2.61799 - desired_direction))
+        output_right = np.dot(velocity, np.cos(0.523599 - desired_direction))
+        output_front = np.dot(velocity, np.cos(4.71239 - desired_direction))
+        # Clip to -1,1
+        clip(output_left, -1.0, 1.0)
+        clip(output_right, -1.0, 1.0)
+        clip(output_front, -1.0, 1.0)
 
         output_pulse_left = self._map_channel_value(output_left, 1)
         output_pulse_right = self._map_channel_value(output_right, 2)
