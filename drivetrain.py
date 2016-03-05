@@ -185,6 +185,12 @@ class DriveTrain():
         output_left = np.dot(velocity, np.cos(self.left_motor_angle_rad - desired_direction))
         output_right = np.dot(velocity, np.cos(self.right_motor_angle_rad - desired_direction))
         output_front = np.dot(velocity, np.cos(self.front_motor_angle_rad - desired_direction))
+
+        # Add rotation to output
+        output_left = output_left + rotate
+        output_right = output_right + rotate
+        output_front = output_front + rotate
+
         # Clip to -1,1
         clip(output_left, -1.0, 1.0)
         clip(output_right, -1.0, 1.0)
