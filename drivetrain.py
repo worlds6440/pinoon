@@ -21,6 +21,11 @@ class DriveTrain():
         aux_channel4=7,
         debug=False
     ):
+        pi = 3.14159265359
+        self.left_motor_angle = 60 * (float(pi) / float(180.0))
+        self.front_motor_angle = 180 * (float(pi) / float(180.0))
+        self.right_motor_angle = 300 * (float(pi) / float(180.0))
+
         # Main set of motor controller ranges
         # Low speed range is 1/4 of full speed
         speed_divisor = 2
@@ -165,9 +170,9 @@ class DriveTrain():
         desired_direction = np.arctan2(forward, side)
         velocity = np.sqrt(np.power(side, 2) + np.power(forward, 2))
         # Calculate apropriate motor speeds (-1, 1)
-        output_left = np.dot(velocity, np.cos(2.61799 - desired_direction))
-        output_right = np.dot(velocity, np.cos(0.523599 - desired_direction))
-        output_front = np.dot(velocity, np.cos(4.71239 - desired_direction))
+        output_left = np.dot(velocity, np.cos(self.left_motor_angle - desired_direction))
+        output_right = np.dot(velocity, np.cos(self.right_motor_angle - desired_direction))
+        output_front = np.dot(velocity, np.cos(self.front_motor_angle - desired_direction))
         # Clip to -1,1
         clip(output_left, -1.0, 1.0)
         clip(output_right, -1.0, 1.0)
