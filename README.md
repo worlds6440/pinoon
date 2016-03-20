@@ -24,3 +24,26 @@ Or for a simpler service install, just run with *sudo* permission the [install.s
 
 	sudo apt-get install i2c-tools  
 	sudo apt-get install python-smbus  
+
+
+Update: 
+https://pythonhosted.org/triangula/sixaxis.html  
+	sudo apt-get install bluetooth libbluetooth3 libusb-dev python-dev  
+	sudo systemctl enable bluetooth.service  
+	sudo usermod -G bluetooth -a pi  
+	wget http://www.pabr.org/sixlinux/sixpair.c  
+	gcc -o sixpair sixpair.c -lusb  
+
+	sudo ./sixpair  
+
+	bluetoothctl  
+	devices  
+	agent on  
+	trust [MAC]  
+	quit  
+
+	ls /dev/input  
+	Look for js0  
+
+	pip install triangula  
+	
