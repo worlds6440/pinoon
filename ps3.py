@@ -13,8 +13,10 @@ while True:
 
                 # Look for button presses
                 buttons_pressed = joystick.get_and_clear_button_press_history()
-                if buttons_pressed & 1 << SixAxis.BUTTON_SQUARE:
+                if buttons_pressed & (1 << SixAxis.BUTTON_SQUARE):
                     print("Square button pressed")
+                if buttons_pressed & (1 << SixAxis.BUTTON_CIRCLE):
+                    print("Circle button pressed")
 
                 # Read the x and y axes of the left hand stick,
                 # the right hand stick has axes 2 and 3
