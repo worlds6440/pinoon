@@ -12,7 +12,7 @@ while True:
         # is paired and active. The bind_defaults argument specifies
         # that we should bind actions to the SELECT and START buttons to
         # centre the controller and reset the calibration respectively.
-        with SixAxisResource.SixAxisResource(bind_defaults=True) as joystick:
+        with SixAxisResource(bind_defaults=True) as joystick:
             # Register a button handler for the square button
             joystick.register_button_handler(handler, SixAxis.BUTTON_SQUARE)
             while joystick.is_connected():
